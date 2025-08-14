@@ -9,9 +9,11 @@ import SwiftUI
 
 @main
 struct Receipt_FinderApp: App {
+    let persistenceController = PersistenceController.shared
     var body: some Scene {
-        WindowGroup {
-            ContentView()
+    WindowGroup {
+        ContentView()
+            .environment(\.managedObjectContext,persistenceController.container.viewContext)
         }
     }
 }

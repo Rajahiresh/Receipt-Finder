@@ -7,15 +7,17 @@
 
 import SwiftUI
 struct DetailsView: View {
-    @Binding var receiptName: String
-    @Binding var selectedImage: UIImage?
+    
+    var item: Item
     var body: some View {
-        TextField(receiptName, text: $receiptName)
-            .padding(10)
-            .background(.gray.opacity(0.1))
-            .cornerRadius(5)
-            .padding()
-        if let image = selectedImage{
+        if let fileName = item.name {
+            Text(fileName)
+                .padding(10)
+                .background(.gray.opacity(0.1))
+                .cornerRadius(5)
+                .padding()
+        }
+        if let image = item.image as? UIImage{
             Image(uiImage: image)
                 .resizable()
                 .scaledToFit()
@@ -27,6 +29,15 @@ struct DetailsView: View {
     }
 }
 
-#Preview {
-    DetailsView(receiptName: .constant("Test"), selectedImage: .constant(UIImage(systemName: "photo")!))
-}
+//#Preview {
+ //   let previewItem = Item(context: PersistenceController.shared.container.viewContext)
+ //   DetailsView(fileName: .constant("Test"),
+               // previewItem.image = UIImage(systemName: "photo"))
+//}
+
+//#Preview {
+    // Mock preview item
+  //  let previewItem = Item(context: PersistenceController.shared.container.viewContext)
+    //previewItem.name = "Test Receipt"
+    //previewItem.image = UIImage(systemName: "photo")
+//}

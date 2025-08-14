@@ -8,10 +8,12 @@
 import SwiftUI
 
 struct ResultView: View {
-    var Names: [String]
-    @State var showReceipt: Bool = false
-    @State var receiptName: String = ""
+
+    @Binding var fileName: String
     @Binding var selectedImage: UIImage?
+    @State var selectedItem: Item?
+    
+    @FetchRequest(entity: Item.entity(), sortDescriptors: [NSSortDescriptor(key:"id",ascending: true)]) var items: FetchedResults<Item>
     
     var body: some View {
         VStack {
@@ -19,25 +21,25 @@ struct ResultView: View {
                 .font(.title)
             List {
                 Section("Previous Activity") {
-                    ForEach(Names, id: \.self) { index in
+                    ForEach(items) { item in
                         Button {
-                            receiptName = index
-                            showReceipt = true
+                            selectedItem = item
                         } label: {
-                            Text(index)
+                            Text(item.name ?? "Unnamed")
                         }
                     }
                 }
             }
         }
-        NavigationLink(destination: DetailsView(receiptName: $receiptName, selectedImage: $selectedImage), isActive: $showReceipt)
-        {
-            EmptyView()
-        }
+        .navigationBarItems(
+            trailing: NavigationLink("Add", destination: AddReceiptView())
+        )
+        .navigationDestination(item: $selectedItem){ item in
+            DetailsView(item: item)
+            }
     }
 }
 
-
 #Preview {
-    ResultView(Names: ["sample.pdf"],selectedImage: .constant(  UIImage(systemName: "photo")))
+    ResultView(fileName: .constant("Test"), selectedImage: .constant(UIImage(systemName: "photo")))
 }

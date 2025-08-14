@@ -6,12 +6,17 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct SaveAsView: View{
     @State var fileName: String = ""
-    @State var savedFiles: [String] = []
     @State var shouldNavigate: Bool = false
     @Binding var selectedImage: UIImage?
+    
+    @Environment(\.managedObjectContext) var  viewContext
+    
+    @FetchRequest(entity: Item.entity(), sortDescriptors: [NSSortDescriptor(key:"id",ascending: true)]) var items: FetchedResults<Item>
+    
     var body: some View{
         
         VStack{
@@ -32,8 +37,8 @@ struct SaveAsView: View{
             }
             Spacer(minLength:20)
             Button {
-                savedFiles.append(fileName)
                 shouldNavigate.toggle()
+                addItem()
             } label: {
                 Text("Save")
                     .font(.headline)
@@ -44,13 +49,30 @@ struct SaveAsView: View{
             }
             
             }.navigationDestination(isPresented: $shouldNavigate) {
-                    ResultView(Names: savedFiles, selectedImage: $selectedImage)
+                ResultView( fileName: $fileName,selectedImage: $selectedImage)
                 }
         }
+    func addItem(){
+        let item = Item(context: viewContext)
+        item.name = fileName
+        item.id = UUID()
+        
+        if let image = selectedImage{
+            item.image = image
+        }
+        
+        do{
+            try viewContext.save()
+            fileName = ""
+        }catch{
+            print(error.localizedDescription)
+        }
+        
     }
+}
 
 
 
 #Preview {
-    SaveAsView(selectedImage: .constant(UIImage(systemName: "photo")!))
+    SaveAsView(selectedImage: .constant(UIImage(systemName: "photo")))
 }

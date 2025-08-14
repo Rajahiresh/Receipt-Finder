@@ -7,12 +7,11 @@
 
 import SwiftUI
 import PhotosUI
-import CoreData
-
 
 struct AddReceiptView: View {
     @State var showcamera: Bool = false
     @State var selectedImage: UIImage?
+    @State var savenav: Bool = false
     var body: some View {
         VStack {
             Spacer()
@@ -36,28 +35,26 @@ struct AddReceiptView: View {
             }
             Spacer()
             VStack {
-                NavigationLink(destination: SaveAsView(selectedImage: $selectedImage)) {
+                Button {
+                    savenav = true
+                } label: {
                     Text("Add Receipt")
                         .font(.headline)
                         .foregroundColor(.white)
                         .frame(width: 300, height: 50)
                         .background(.blue)
                         .cornerRadius(15)
-                }.padding(30)
-            }
-        }.padding()
+                }.navigationDestination(isPresented: $savenav) {
+                    SaveAsView(selectedImage: $selectedImage)
+                }
+                   
+                }
+            }.padding(20)
+        }
     }
-}
 
-func addReceipt(name: String, image: UIImage?) {
-    let ctx = CoreDataManager.shared.context
-    let obj = NSEntityDescription.insertNewObject(forEntityName: "Receipt", into: ctx)
-    obj.setValue(name, forKey: "name")
-    if let data = image?.jpegData(compressionQuality: 0.9) {
-        obj.setValue(data, forKey: "imageData")
-    }
-    CoreDataManager.shared.save()
-}
+
+
 
 
 #Preview {
