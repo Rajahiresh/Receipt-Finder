@@ -10,6 +10,7 @@ import CoreData
 
 struct SaveAsView: View{
     @State var fileName: String = ""
+    @State var searchText: String = ""
     @State var shouldNavigate: Bool = false
     @Binding var selectedImage: UIImage?
     
@@ -49,7 +50,7 @@ struct SaveAsView: View{
             }
             
             }.navigationDestination(isPresented: $shouldNavigate) {
-                ResultView( fileName: $fileName,selectedImage: $selectedImage)
+                ResultView( fileName: $fileName, searchText: searchText, selectedImage: $selectedImage )
                 }
         }
     func addItem(){
@@ -74,5 +75,5 @@ struct SaveAsView: View{
 
 
 #Preview {
-    SaveAsView(selectedImage: .constant(UIImage(systemName: "photo")))
+    SaveAsView(searchText: "hello", selectedImage: .constant(UIImage(systemName: "photo")))
 }

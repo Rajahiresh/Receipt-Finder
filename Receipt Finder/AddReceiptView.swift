@@ -12,6 +12,7 @@ struct AddReceiptView: View {
     @State var showcamera: Bool = false
     @State var selectedImage: UIImage?
     @State var savenav: Bool = false
+    
     var body: some View {
         VStack {
             Spacer()
