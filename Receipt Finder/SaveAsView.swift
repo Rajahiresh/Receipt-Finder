@@ -12,6 +12,9 @@ struct SaveAsView: View{
     @State var fileName: String = ""
     @State var searchText: String = ""
     @State var shouldNavigate: Bool = false
+    @State var showFileAlert: Bool = false
+    @State var receiptAlert: Bool = false
+    @State var okAlert: Bool = false
     @Binding var selectedImage: UIImage?
     
     @Environment(\.managedObjectContext) var  viewContext
@@ -37,22 +40,46 @@ struct SaveAsView: View{
                     .padding(20)
             }
             Spacer(minLength:20)
-            Button {
-                shouldNavigate.toggle()
-                addItem()
-            } label: {
-                Text("Save")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .frame(width: 300, height: 50)
-                    .background(.blue)
-                    .cornerRadius(15)
-            }
-            
-            }.navigationDestination(isPresented: $shouldNavigate) {
-                ResultView( fileName: $fileName, searchText: searchText, selectedImage: $selectedImage )
+            if !fileName.isEmpty{
+                Button {
+                    addItem()
+                    receiptAlert = true
+                    groupName()
+                } label: {
+                    Text("Save")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(width: 300, height: 50)
+                        .background(.blue)
+                        .cornerRadius(15)
                 }
+            }
+            else {
+                Button {
+                    showFileAlert = true
+                } label: {
+                    Text("Save")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .frame(width: 300, height: 50)
+                        .background(.blue)
+                        .cornerRadius(15)
+                }.alert("Name not Found", isPresented: $showFileAlert){
+                    
+                }
+            }
+        } .alert("Added Receipt Successfully", isPresented: $receiptAlert) {
+            Button {
+                okAlert = true
+            } label: {
+                Text("OK")
+            }
         }
+        .navigationDestination(isPresented: $okAlert) {
+            ResultView( fileName: $fileName, searchText: searchText, selectedImage: $selectedImage)
+        }
+    }
+    
     func addItem(){
         let item = Item(context: viewContext)
         item.name = fileName
@@ -68,11 +95,14 @@ struct SaveAsView: View{
         }catch{
             print(error.localizedDescription)
         }
-        
+    }
+    
+    func groupName(){
+        if let firstWord = fileName.split(separator: " ").first {
+            print(firstWord)  // Output: Hello
+        }
     }
 }
-
-
 
 #Preview {
     SaveAsView(searchText: "hello", selectedImage: .constant(UIImage(systemName: "photo")))

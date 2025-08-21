@@ -9,11 +9,14 @@ import SwiftUI
 import PhotosUI
 
 struct AddReceiptView: View {
+    
     @State var showcamera: Bool = false
     @State var selectedImage: UIImage?
     @State var savenav: Bool = false
+    @State var showAlert: Bool = false
     
     var body: some View {
+        
         VStack {
             Spacer()
             Button {
@@ -31,32 +34,46 @@ struct AddReceiptView: View {
                         .frame(width: 100, height: 100)
                         .foregroundColor(.black)
                 }
-            }.sheet(isPresented:$showcamera){
+            }.fullScreenCover(isPresented:$showcamera){
                 CameraView(image: $selectedImage)
+                    .ignoresSafeArea(.all)
             }
             Spacer()
             VStack {
-                Button {
-                    savenav = true
-                } label: {
-                    Text("Add Receipt")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(width: 300, height: 50)
-                        .background(.blue)
-                        .cornerRadius(15)
-                }.navigationDestination(isPresented: $savenav) {
-                    SaveAsView(selectedImage: $selectedImage)
+                if selectedImage != nil {
+                    Button {
+                        savenav = true
+                    } label: {
+                        Text("Add Receipt")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(width: 300, height: 50)
+                            .background(.blue)
+                            .cornerRadius(15)
+                    }.navigationDestination(isPresented: $savenav) {
+                        NavigationStack {
+                            SaveAsView(selectedImage: $selectedImage)
+                        }
+                    }
                 }
-                   
+                else {
+                    Button {
+                        showAlert = true
+                    } label: {
+                        Text("Add Receipt")
+                            .font(.headline)
+                            .foregroundColor(.white)
+                            .frame(width: 300, height: 50)
+                            .background(.blue)
+                            .cornerRadius(15)
+                    }.alert("Image Not Found", isPresented: $showAlert){
+                        
+                    }
                 }
-            }.padding(20)
-        }
+            }
+        }.padding(20)
     }
-
-
-
-
+}
 
 #Preview {
     AddReceiptView()

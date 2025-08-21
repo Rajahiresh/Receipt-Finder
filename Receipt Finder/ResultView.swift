@@ -20,10 +20,6 @@ struct ResultView: View {
     var body: some View {
         VStack {
             List {
-                Section("Result"){
-                    Text("Receipt Added Successfully!")
-                        .font(.headline)
-                }
                 Section("Previous Activity") {
                     ForEach(filteredItems) { item in
                         Button {

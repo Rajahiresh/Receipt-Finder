@@ -10,54 +10,68 @@ import Vision
 
 struct DetailsView: View {
     
-    @State var recognizedText: String = ""
-    @State var fullText: String = ""
+    @State private var recognizedText: String = ""
+    @State private var fullText: String = ""
+    @State private var fullScreenImage: Bool = false
+    
     var item: Item
     
     var body: some View {
-        Button {
-            recognizeText()
-        } label: {
-            if let fileName = item.name {
-                Text(fileName)
-                    .padding(10)
-                    .background(.gray.opacity(0.1))
-                    .cornerRadius(5)
-                    .padding()
-            }
-        }
-        
-        TextEditor(text: $recognizedText)
-        
-        if let image = item.image as? UIImage{
-            Image(uiImage: image)
-                .resizable()
-                .scaledToFit()
-                .clipShape(RoundedRectangle(cornerRadius: 10))
-                .padding(20)
-        }else{
-            Text("No Image Selected")
+        VStack {
+                Button {
+                    recognizeText(for: item)
+                } label: {
+                    if let fileName = item.name {
+                        Text(fileName)
+                            .padding(10)
+                            .background(.gray.opacity(0.1))
+                            .cornerRadius(5)
+                            .padding()
+                    }
+                }
+                
+                HStack {
+                    TextEditor(text: $recognizedText)
+                        .frame(minWidth: 150, maxHeight: .infinity)
+                    
+                    if let image = item.image as? UIImage {
+                        Image(uiImage: image)
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 200, height: 200)
+                            .clipShape(RoundedRectangle(cornerRadius: 10))
+                            .padding(20)
+                            .onTapGesture {
+                                fullScreenImage = true
+                            }
+                            .fullScreenCover(isPresented: $fullScreenImage) {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFit()
+                                    .onTapGesture {
+                                        fullScreenImage = false
+                                    }
+                            }
+                    }
+                }
         }
     }
     
-    func recognizeText() {
-        let image = item.image as! UIImage
-        
-        guard let cgImage = image.cgImage else { return }
+    func recognizeText(for item: Item) {
+        guard let image = item.image as? UIImage,
+              let cgImage = image.cgImage else { return }
         
         let handler = VNImageRequestHandler(cgImage: cgImage)
-        let request = VNRecognizeTextRequest{request, error in
-            guard  error == nil else{
+        let request = VNRecognizeTextRequest { request, error in
+            guard error == nil else {
                 print(error?.localizedDescription ?? "")
                 return
             }
-            
-            guard let result = request.results as? [VNRecognizedTextObservation]
-            else {
+            guard let result = request.results as? [VNRecognizedTextObservation] else {
                 return
             }
             
-            let recogArr = result.compactMap{ result in
+            let recogArr = result.compactMap { result in
                 result.topCandidates(1).first?.string
             }
             
@@ -68,35 +82,34 @@ struct DetailsView: View {
         }
         
         request.recognitionLevel = .accurate
-        
-        do{
+        do {
             try handler.perform([request])
-        }catch{
+        } catch {
             print(error.localizedDescription)
         }
     }
+    
     func extractImportantInfo(from text: String) -> String {
         var info = [String]()
         
-        // Extract Grand Total (more specific)
         if let match = text.range(of: "(?i)GRAND TOTAL\\s*\\$?\\s*[0-9]+(\\.[0-9]{2})?", options: .regularExpression) {
             info.append("Grand Total: \(text[match])")
         }
         
-        // Extract Date (first MM/DD/YYYY found)
         if let match = text.range(of: "\\d{1,2}/\\d{1,2}/\\d{4}", options: .regularExpression) {
             info.append("Date: \(text[match])")
         }
         
-        // Extract Payment Type + Card Number
-        if let cardLine = text.components(separatedBy: "\n").first(where: { $0.localizedCaseInsensitiveContains("AMEX") || $0.localizedCaseInsensitiveContains("VISA") || $0.localizedCaseInsensitiveContains("MASTER") || $0.localizedCaseInsensitiveContains("DISCOVER") }) {
-            
-            // Example: "AMEX ********1020"
+        if let cardLine = text.components(separatedBy: "\n").first(where: {
+            $0.localizedCaseInsensitiveContains("AMEX") ||
+            $0.localizedCaseInsensitiveContains("VISA") ||
+            $0.localizedCaseInsensitiveContains("MASTER") ||
+            $0.localizedCaseInsensitiveContains("DISCOVER")
+        }) {
             let parts = cardLine.split(separator: " ")
             if let cardType = parts.first {
                 info.append("Payment Type: Credit Card (\(cardType))")
             }
-            
             if let lastPart = parts.last, lastPart.count >= 4 {
                 info.append("Card Number: \(lastPart)")
             }
@@ -108,7 +121,6 @@ struct DetailsView: View {
             info.append("Payment Type: Cash")
         }
         
-        // Extract Store (first line is usually store name)
         if let firstLine = text.components(separatedBy: "\n").first {
             info.append("Store: \(firstLine)")
         }
@@ -117,15 +129,17 @@ struct DetailsView: View {
     }
 }
 
-//#Preview {
- //   let previewItem = Item(context: PersistenceController.shared.container.viewContext)
- //   DetailsView(fileName: .constant("Test"),
-               // previewItem.image = UIImage(systemName: "photo"))
-//}
 
-//#Preview {
-    // Mock preview item
-  //  let previewItem = Item(context: PersistenceController.shared.container.viewContext)
-    //previewItem.name = "Test Receipt"
-    //previewItem.image = UIImage(systemName: "photo")
-//}
+#Preview {
+    {
+        let previewItem = Item(context: PersistenceController.shared.container.viewContext)
+        previewItem.name = "Test Receipt"
+        previewItem.id = UUID()
+        previewItem.image = UIImage(systemName: "photo") // or .pngData() if your Core Data stores Data
+        
+        return DetailsView(item: previewItem)
+    }()
+}
+
+
+

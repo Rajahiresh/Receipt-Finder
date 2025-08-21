@@ -12,7 +12,7 @@ struct Receipt_FinderApp: App {
     let persistenceController = PersistenceController.shared
     var body: some Scene {
     WindowGroup {
-        ContentView()
+        ModeView()
             .environment(\.managedObjectContext,persistenceController.container.viewContext)
         }
     }
