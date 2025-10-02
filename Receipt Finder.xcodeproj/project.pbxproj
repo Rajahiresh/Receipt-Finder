@@ -12,7 +12,6 @@
 		5694A6332E4D220A00F86D87 /* ReceiptFinderAppProperties.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694A6322E4D220A00F86D87 /* ReceiptFinderAppProperties.swift */; };
 		5694A6472E4D2A8200F86D87 /* Persistence.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694A6462E4D2A8200F86D87 /* Persistence.swift */; };
 		5694A6492E4E302D00F86D87 /* UIImageTransformer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5694A6482E4E302D00F86D87 /* UIImageTransformer.swift */; };
-		56EDC18B2E57A43A00A518A0 /* ModeView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 56EDC18A2E57A43A00A518A0 /* ModeView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -41,7 +40,6 @@
 		56A631CB2E395CF9004FCC99 /* Receipt Finder.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = "Receipt Finder.app"; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A631D92E395CFA004FCC99 /* Receipt FinderTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Receipt FinderTests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
 		56A631E32E395CFA004FCC99 /* Receipt FinderUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = "Receipt FinderUITests.xctest"; sourceTree = BUILT_PRODUCTS_DIR; };
-		56EDC18A2E57A43A00A518A0 /* ModeView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -99,7 +97,6 @@
 		56A631C22E395CF9004FCC99 = {
 			isa = PBXGroup;
 			children = (
-				56EDC18A2E57A43A00A518A0 /* ModeView.swift */,
 				5694A6482E4E302D00F86D87 /* UIImageTransformer.swift */,
 				5694A62F2E4D0B8200F86D87 /* ReceiptFinderApp.xcdatamodeld */,
 				5694A6322E4D220A00F86D87 /* ReceiptFinderAppProperties.swift */,
@@ -273,7 +270,6 @@
 				5694A6332E4D220A00F86D87 /* ReceiptFinderAppProperties.swift in Sources */,
 				5694A6312E4D0B8200F86D87 /* ReceiptFinderApp.xcdatamodeld in Sources */,
 				5694A6492E4E302D00F86D87 /* UIImageTransformer.swift in Sources */,
-				56EDC18B2E57A43A00A518A0 /* ModeView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

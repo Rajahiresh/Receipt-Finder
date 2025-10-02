@@ -16,6 +16,7 @@ struct SaveAsView: View{
     @State var receiptAlert: Bool = false
     @State var okAlert: Bool = false
     @Binding var selectedImage: UIImage?
+    @State var fullScreenImage: Bool = false
     
     @Environment(\.managedObjectContext) var  viewContext
     
@@ -24,6 +25,7 @@ struct SaveAsView: View{
     var body: some View{
         
         VStack{
+            Spacer(minLength: 20)
             HStack{
                 Text("File Name:")
                     .font(.headline)
@@ -38,6 +40,11 @@ struct SaveAsView: View{
                     .scaledToFit()
                     .clipShape(RoundedRectangle(cornerRadius: 10))
                     .padding(20)
+                    .onTapGesture {
+                        fullScreenImage.toggle()
+                    }.fullScreenCover(isPresented: $fullScreenImage){
+                        ZoomableFullScreenImage(image: image, fullScreenImage: $fullScreenImage)
+                    }
             }
             Spacer(minLength:20)
             if !fileName.isEmpty{
@@ -78,6 +85,7 @@ struct SaveAsView: View{
         .navigationDestination(isPresented: $okAlert) {
             ResultView( fileName: $fileName, searchText: searchText, selectedImage: $selectedImage)
         }
+        .navigationBarBackButtonHidden()
     }
     
     func addItem(){

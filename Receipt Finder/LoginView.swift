@@ -11,6 +11,11 @@ struct LoginView: View {
     @State var username: String = ""
     @State var password: String = ""
     
+    // State to satisfy ResultView's initializer
+    @State var fileName: String = ""
+    @State var searchText: String = ""
+    @State var selectedImage: UIImage? = nil
+    
     var body: some View {
         VStack{
             HStack{
@@ -30,7 +35,9 @@ struct LoginView: View {
                     .cornerRadius(10)
             }.padding()
             
-            NavigationLink(destination: ModeView()) {
+            NavigationLink(destination: ResultView(fileName: $fileName,
+                                                   searchText: searchText,
+                                                   selectedImage: $selectedImage)) {
                 Text("Sign In")
                     .font(.headline)
                     .foregroundColor(.white)
