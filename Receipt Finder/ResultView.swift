@@ -6,9 +6,9 @@
 //
 
 import SwiftUI
+import CoreData
 
 struct ResultView: View {
-    
     @Binding var fileName: String
     @State var searchText: String
     @Binding var selectedImage: UIImage?
@@ -16,13 +16,15 @@ struct ResultView: View {
     
     @State private var showScanner = false
     @State private var addNew = false
-    @State private var recognizedText = ""
+    @State private var recognizedText = ""   // raw OCR text
     @State private var navigateToSaveAs = false
-    @State private var isProcessing = false   // ✅ Loading state
+    @State private var navigateToDetails = false
+    @State private var isProcessing = false
     
-    @FetchRequest(entity: Item.entity(),
-                  sortDescriptors: [NSSortDescriptor(key: "id", ascending: true)])
-    var items: FetchedResults<Item>
+    @FetchRequest(
+        entity: Item.entity(),
+        sortDescriptors: [NSSortDescriptor(key: "id", ascending: true)]
+    ) var items: FetchedResults<Item>
     
     @Environment(\.managedObjectContext) var viewContext
     
@@ -34,6 +36,7 @@ struct ResultView: View {
                         ForEach(filteredItems) { item in
                             Button {
                                 selectedItem = item
+                                navigateToDetails = true
                             } label: {
                                 Text(item.name ?? "Unnamed")
                             }
@@ -42,37 +45,29 @@ struct ResultView: View {
                     }
                 }
                 
-                Button {
+                Button("Add New Receipt") {
                     addNew = true
-                } label: {
-                    Text("Add New Receipt")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(width: 300, height: 50)
-                        .background(Color.blue)
-                        .cornerRadius(15)
                 }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(width: 300, height: 50)
+                .background(Color.blue)
+                .cornerRadius(15)
                 .confirmationDialog("Select an option",
                                     isPresented: $addNew,
                                     titleVisibility: .visible) {
-                    
                     Button("Open Camera") {
                         showScanner = true
                     }
-                    
                     Button("Add from Library") {
                         // TODO: implement photo picker
                     }
-                    
                     Button("Cancel", role: .cancel) { }
                 }
             }
             
-            // ✅ Show loading overlay when processing OCR
             if isProcessing {
-                Color.black.opacity(0.4)
-                    .edgesIgnoringSafeArea(.all)
-                
+                Color.black.opacity(0.4).edgesIgnoringSafeArea(.all)
                 ProgressView("Processing...")
                     .padding()
                     .background(Color.white)
@@ -82,26 +77,31 @@ struct ResultView: View {
         }
         .searchable(text: $searchText, prompt: "Search")
         
-        // Navigation
-        .navigationDestination(item: $selectedItem) { item in
-            DetailsView(item: item)
+        // ✅ Navigation to Details (CoreData Item)
+        .navigationDestination(isPresented: $navigateToDetails) {
+            if let item = selectedItem {
+                DetailsView(
+                    item: item,
+                    recognizedText: recognizedText // pass OCR text here
+                )
+            }
         }
+        
+        // ✅ Navigation to SaveAs
         .navigationDestination(isPresented: $navigateToSaveAs) {
             SaveAsView(
                 fileName: "",
                 searchText: searchText,
                 selectedImage: $selectedImage
             )
+            .environment(\.managedObjectContext, viewContext)
         }
         
-        // Scanner fullscreen cover
+        // ✅ Scanner
         .fullScreenCover(isPresented: $showScanner) {
             DocumentScannerView { images, text in
-                isProcessing = true  // Start loading indicator
-                
+                isProcessing = true
                 self.selectedImage = images.first
-                
-                // OCR complete
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) {
                     self.recognizedText = text
                     self.isProcessing = false
@@ -112,18 +112,13 @@ struct ResultView: View {
         }
     }
     
-    // MARK: - Delete Item
+    // MARK: - Delete
     private func deleteItem(at offsets: IndexSet) {
         for index in offsets {
             let item = items[index]
             viewContext.delete(item)
-            
-            do {
-                try viewContext.save()
-            } catch {
-                print(error.localizedDescription)
-            }
         }
+        try? viewContext.save()
     }
     
     // MARK: - Filtered Items
@@ -135,3 +130,4 @@ struct ResultView: View {
         }
     }
 }
+

@@ -11,6 +11,8 @@ import Vision
 
 struct DocumentScannerView: UIViewControllerRepresentable {
     @Environment(\.presentationMode) var presentationMode
+    
+    // Pass scanned images + OCR text back to parent
     var onScanComplete: (_ images: [UIImage], _ recognizedText: String) -> Void
     
     func makeUIViewController(context: Context) -> VNDocumentCameraViewController {
@@ -19,9 +21,7 @@ struct DocumentScannerView: UIViewControllerRepresentable {
         return scanner
     }
     
-    func updateUIViewController(_ uiViewController: VNDocumentCameraViewController, context: Context) {
-        // No updates needed
-    }
+    func updateUIViewController(_ uiViewController: VNDocumentCameraViewController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -53,15 +53,14 @@ struct DocumentScannerView: UIViewControllerRepresentable {
             
             parent.presentationMode.wrappedValue.dismiss()
             
-            // ✅ Run OCR COMPLETELY off the main thread
+            // ✅ Run OCR on first page (or loop if multi-page)
             DispatchQueue.global(qos: .userInitiated).async {
                 var recognizedText = ""
-                
                 if let firstImage = images.first {
                     recognizedText = self.performOCR(on: firstImage)
                 }
                 
-                // Switch back to main thread once OCR is complete
+                // Send results back to parent
                 DispatchQueue.main.async {
                     self.parent.onScanComplete(images, recognizedText)
                 }
@@ -79,7 +78,6 @@ struct DocumentScannerView: UIViewControllerRepresentable {
             request.usesLanguageCorrection = true
             
             let handler = VNImageRequestHandler(cgImage: cgImage, options: [:])
-            
             do {
                 try handler.perform([request])
             } catch {
