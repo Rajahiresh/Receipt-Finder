@@ -43,13 +43,9 @@ struct ZoomableFullScreenImage: View {
                                 }
                         )
                     )
-            }.navigationBarItems(
-                trailing: Button {
-                    fullScreenImage = false
-                } label: {
-                    Text("Close")
-                }
-            )
+            }.onTapGesture {
+                fullScreenImage = false
+            }
         }
     }
 }

@@ -8,110 +8,92 @@
 import SwiftUI
 import CoreData
 
-struct SaveAsView: View{
-    @State var fileName: String = ""
-    @State var searchText: String = ""
-    @State var shouldNavigate: Bool = false
-    @State var showFileAlert: Bool = false
-    @State var receiptAlert: Bool = false
-    @State var okAlert: Bool = false
+struct SaveAsView: View {
+    @Environment(\.dismiss) private var dismiss
+    @Environment(\.managedObjectContext) private var viewContext
+    
+    @State var fileName: String
+    @State var searchText: String
     @Binding var selectedImage: UIImage?
-    @State var fullScreenImage: Bool = false
     
-    @Environment(\.managedObjectContext) var  viewContext
+    @State var fullScreenImage = false
     
-    @FetchRequest(entity: Item.entity(), sortDescriptors: [NSSortDescriptor(key:"id",ascending: true)]) var items: FetchedResults<Item>
+    @State private var showFileAlert = false
+    @State private var okAlert = false
     
-    var body: some View{
-        
-        VStack{
-            Spacer(minLength: 20)
+    var body: some View {
+        VStack(spacing: 20) {
+            // ✅ File name input
             HStack{
-                Text("File Name:")
+                Text("FileName:")
                     .font(.headline)
-                TextField("Enter File Name", text: $fileName)
+                TextField("Enter FileName", text: $fileName)
                     .padding(10)
                     .background(.gray.opacity(0.1))
                     .cornerRadius(10)
             }.padding()
-            if let image = selectedImage{
+            
+            // ✅ Preview selected image
+            if let image = selectedImage {
                 Image(uiImage: image)
                     .resizable()
                     .scaledToFit()
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .padding(20)
+                    .padding()
                     .onTapGesture {
                         fullScreenImage.toggle()
-                    }.fullScreenCover(isPresented: $fullScreenImage){
+                    }
+                    .fullScreenCover(isPresented: $fullScreenImage) {
                         ZoomableFullScreenImage(image: image, fullScreenImage: $fullScreenImage)
                     }
+            } else {
+                Text("No image selected")
+                    .foregroundColor(.gray)
             }
-            Spacer(minLength:20)
-            if !fileName.isEmpty{
-                Button {
-                    addItem()
-                    receiptAlert = true
-                    groupName()
-                } label: {
-                    Text("Save")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(width: 300, height: 50)
-                        .background(.blue)
-                        .cornerRadius(15)
-                }
-            }
-            else {
-                Button {
+            
+            Spacer()
+            
+            // ✅ Save button
+            Button("Save") {
+                if fileName.trimmingCharacters(in: .whitespaces).isEmpty {
                     showFileAlert = true
-                } label: {
-                    Text("Save")
-                        .font(.headline)
-                        .foregroundColor(.white)
-                        .frame(width: 300, height: 50)
-                        .background(.blue)
-                        .cornerRadius(15)
-                }.alert("Name not Found", isPresented: $showFileAlert){
-                    
+                } else {
+                    saveReceipt()
                 }
             }
-        } .alert("Added Receipt Successfully", isPresented: $receiptAlert) {
-            Button {
-                okAlert = true
-            } label: {
-                Text("OK")
+            .font(.headline)
+            .frame(width:300, height: 50)
+            .background(.blue)
+            .foregroundColor(.white)
+            .cornerRadius(15)
+            .padding(30)
+
+            
+            Spacer()
+        }
+        .alert("File name required", isPresented: $showFileAlert) {
+            Button("OK", role: .cancel) { }
+        }
+        .alert("Added Receipt Successfully", isPresented: $okAlert) {
+            Button("OK") {
+                dismiss() // ✅ Go back to ResultView after saving
             }
         }
-        .navigationDestination(isPresented: $okAlert) {
-            ResultView( fileName: $fileName, searchText: searchText, selectedImage: $selectedImage)
-        }
-        .navigationBarBackButtonHidden()
     }
     
-    func addItem(){
-        let item = Item(context: viewContext)
-        item.name = fileName
-        item.id = UUID()
-        
-        if let image = selectedImage{
-            item.image = image
+    // MARK: - Save to Core Data
+    private func saveReceipt() {
+        let newItem = Item(context: viewContext)
+        newItem.id = UUID()
+        newItem.name = fileName
+        if let uiImage = selectedImage {
+            newItem.image = uiImage
         }
         
-        do{
+        do {
             try viewContext.save()
-            fileName = ""
-        }catch{
-            print(error.localizedDescription)
+            okAlert = true
+        } catch {
+            print("❌ Failed to save receipt: \(error)")
         }
     }
-    
-    func groupName(){
-        if let firstWord = fileName.split(separator: " ").first {
-            print(firstWord)  // Output: Hello
-        }
-    }
-}
-
-#Preview {
-    SaveAsView(searchText: "hello", selectedImage: .constant(UIImage(systemName: "photo")))
 }
